@@ -1,0 +1,10 @@
+dash
+dash-renderer
+dash-html-components
+dash-core-components
+dash-bootstrap-components
+plotly
+dash-table
+pandas
+pyyaml
+
