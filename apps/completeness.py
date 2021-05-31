@@ -173,7 +173,3 @@ layout = dbc.Container([
     'margin-left': '0',
     'max-width': '100%'
 })
-
-
-#if __name__ == '__main__':
-#    app.run_server(debug=True)
