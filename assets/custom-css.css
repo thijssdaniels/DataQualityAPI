@@ -1,3 +1,4 @@
+/* Navigation in Sidebar */
 .nav-pills .nav-link.active {
     color: #fff  !important;
     background-color: #567C4D !important;
@@ -7,7 +8,20 @@
     color: #567C4D
 }
 
-.nav-pills .nav-link:hover{
+.nav-pills .nav-link:hover {
     background-color: #225762;
     color: #fff;
+}
+
+/* Title header Navigation Panel */
+.navbar .container {
+    padding-left: 0em;
+    margin-left: 2em;
+}
+
+.h-100 {
+    padding-top: 2vh;
+    left: 0;
+    bottom: 0;
+    background-color: #f8f9fa;
 }
