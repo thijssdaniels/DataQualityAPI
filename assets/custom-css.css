@@ -1,11 +1,46 @@
+/* Navigation bar Top */
+.bg-light {
+    background-color:  #7059EF !important;
+}
+
+.h-100 {
+    padding-top: 2vh;
+    left: 0;
+    bottom: 0;
+    background-color: #f8f9fa;
+}
+
+/* Sidebar Column */
+.col-2 {
+    max-width: 16%;
+    margin: 0;
+    border: 0;
+    padding-left: 3vh;
+    height: 100%;
+    background-color: #f8f9fa;
+}
+
+/* Title in Sidebar */
+@media only screen and (max-width: 2560px) {
+    .display-4 {
+        font-size: 3rem;
+    }
+}
+
+@media only screen and (max-width: 1792px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+}
+
 /* Navigation in Sidebar */
 .nav-pills .nav-link.active {
     color: #fff  !important;
-    background-color: #567C4D !important;
+    background-color: #7059EF !important;
 }
 
 .nav-pills .nav-link {
-    color: #567C4D
+    color: #7059EF
 }
 
 .nav-pills .nav-link:hover {
@@ -19,9 +54,6 @@
     margin-left: 2em;
 }
 
-.h-100 {
-    padding-top: 2vh;
-    left: 0;
-    bottom: 0;
-    background-color: #f8f9fa;
-}
+
+
+

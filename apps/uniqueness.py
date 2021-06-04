@@ -23,7 +23,6 @@ from app import app
 navbar = dbc.NavbarSimple(
     brand="Palade - Data Quality Dashboard",
     brand_href="#",
-    color="#567C4D",
     dark=True
 )
 

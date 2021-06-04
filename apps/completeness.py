@@ -44,12 +44,11 @@ compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
 PAGE_SIZE = 5
 
 # App Layout
-#app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+# app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 navbar = dbc.NavbarSimple(
     brand="Palade - Data Quality Dashboard",
     brand_href="#",
-    color="#567C4D",
     dark=True
 )
 
@@ -88,14 +87,14 @@ content = dbc.Container([
                                  style={'textAlign': 'center',
                                         'font-size': '10vh',
                                         'height': '100%',
-                                        'padding-top': '40%',
+                                        'paddingTop': '40%',
                                         'color': '#567C4D'}
                                  ),
                           dcc.Dropdown(
                               options=[{'label': i, 'value': i} for i in completeness_cols],
                               multi=True,
                               placeholder='Select a column for individual scores',
-                              style={'width': '100%', 'padding-left': '5%'}
+                              style={'width': '100%', 'paddingLeft': '5%'}
                           )]),
                 width=3
                 ),
@@ -114,7 +113,7 @@ content = dbc.Container([
                                                     marker_color=px.colors.qualitative.D3[3])]) \
                       .update_layout(barmode='stack',
                                      bargap=0.07,
-                                     yaxis=dict(tickformat=".2%"),
+                                     yaxis={'tickformat': ".2%"},
                                      legend={
                                          'orientation': "h",
                                          'yanchor': "bottom",
@@ -123,12 +122,12 @@ content = dbc.Container([
                                          'xanchor': "center"},
                                      title={
                                          'text': "Completeness per Column",
-                                         'y': 0.9,
+                                         'y': 0.92,
                                          'x': 0.5,
                                          'xanchor': 'center',
                                          'yanchor': 'top'}),
                       style={
-                          'height': '100%',
+                          'height': '95%',
                           'width': '100%',
                           'padding': '0',
                           'verticalAlign': 'middle'}),
@@ -138,27 +137,21 @@ content = dbc.Container([
     # second row
     dbc.Row([
         dbc.Col(children=[],
-            width=12)
+                width=12)
     ], className="h-50")
 ], style={
     "height": "100vh",
     "margin": "0vh",
     "border": "0vh",
     "padding": "0vh",
-    "max-width": '100%',
+    "maxWidth": '100%',
 })
 
 layout = dbc.Container([
     navbar,
     dbc.Row([
         dbc.Col(html.Div(sidebar),
-                width=2, style={
-                "margin": "0",
-                "border": "0",
-                "padding-left": '3vh',
-                "height": "100%",
-                "background-color": "#f8f9fa"
-            }),
+                width=2),
         dbc.Col(html.Div(content),
                 width=10),
     ], style={
@@ -167,9 +160,9 @@ layout = dbc.Container([
         "padding": "0",
         "height": "100vh"}),
 ], style={
-    'padding-right': '0',
-    'padding-left': '0',
-    'margin-right': '0',
-    'margin-left': '0',
-    'max-width': '100%'
+    'paddingRight': '0',
+    'paddingLeft': '0',
+    'marginRight': '0',
+    'marginLeft': '0',
+    'maxWidth': '100%'
 })
