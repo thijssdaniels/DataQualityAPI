@@ -16,11 +16,28 @@ from styling import *
 
 from app import app
 
-# App Layout
-#app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+# Path
+BASE_PATH = pathlib.Path(__file__).resolve().parent.parent
+DATA_PATH = BASE_PATH.joinpath('data').resolve()
+
+# Read Data
+df = pd.read_csv(DATA_PATH.joinpath('df.csv'), delimiter=';', skiprows=4, na_values='#')
+df[' index'] = range(1, len(df) + 1)
+
+with open(DATA_PATH.joinpath('config.yml')) as file:
+    # The FullLoader parameter handles the conversion from YAML
+    # scalar values to Python the dictionary format
+    yaml_list = yaml.safe_load(file)
+    completeness_cols = yaml_list['completeness']
+
+# Clean column names and parse date columns
+df.columns = parse_column_names(df)
+
+date_cols = returnDateCols(df, threshold=0.5, sample_size=1000)
+df[date_cols] = df[date_cols].apply(pd.to_datetime, errors='coerce')
 
 navbar = dbc.NavbarSimple(
-    brand="Palade - Data Quality Dashboard",
+    brand="Vault - Data Quality Dashboard",
     brand_href="#",
     dark=True
 )
@@ -52,7 +69,12 @@ sidebar = dbc.Container([
     ], className='h-100')
 ])
 
-content = dbc.Container([], style={
+content = dbc.Container([
+    dash_table.DataTable(
+        columns=[{"name": i, "id": i} for i in df.columns],
+        data=df.to_dict('records')
+    )
+], style={
     "height": "100vh",
     "margin": "0vh",
     "border": "0vh",
