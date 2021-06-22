@@ -16,12 +16,8 @@ from styling import *
 
 from app import app
 
-
-# App Layout
-#app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-
 navbar = dbc.NavbarSimple(
-    brand="Palade - Data Quality Dashboard",
+    brand="Vault - Data Quality Dashboard",
     brand_href="#",
     dark=True
 )

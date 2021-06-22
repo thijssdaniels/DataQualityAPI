@@ -22,7 +22,7 @@ def multiStatement(condition, dataframe, reason=np.nan, include_reason=True):
         inputs = [re.match(oper_before, c).group().strip() for c in cond]
         validations = [re.findall(oper_after, c)[0].strip() for c in cond]
 
-        inp_testing = [df[item] for item in inputs if item in df.columns]
+        inp_testing = [dataframe[item] for item in inputs if item in dataframe.columns]
         val_testing = [int(item) if item.isdigit() else str(item) for item in validations]
 
         # Test both assumptions from the instance
@@ -34,8 +34,8 @@ def multiStatement(condition, dataframe, reason=np.nan, include_reason=True):
         # If either one is False, return False. Else True
         if ('|' in condition[i]) & ('&' in condition[i]):
             # First & second condition before the or statement
-            s = cond.index(condition[i][:conditions[0].find('|')].strip())
-            e = cond.index(condition[i][conditions[0].find('|') + 1:condition[i].find('&')].strip())
+            s = cond.index(condition[i][:condition[0].find('|')].strip())
+            e = cond.index(condition[i][condition[0].find('|') + 1:condition[i].find('&')].strip())
             idx = [s, e]
 
             res_one = [any(res) for res in zip(temp[min(idx)][:], temp[max(idx)][:])]

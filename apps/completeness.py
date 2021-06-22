@@ -12,7 +12,7 @@ import pandas as pd
 import pathlib
 import yaml
 from functions import *
-from styling import *
+from collections import Counter
 
 from app import app
 
@@ -22,7 +22,7 @@ DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
 # Read Data
 df = pd.read_csv(DATA_PATH.joinpath('df.csv'), delimiter=';', skiprows=4, na_values='#')
-df[' index'] = range(1, len(df) + 1)
+df['index'] = range(1, len(df) + 1)
 
 with open(DATA_PATH.joinpath('config.yml')) as file:
     # The FullLoader parameter handles the conversion from YAML
@@ -38,16 +38,13 @@ df[date_cols] = df[date_cols].apply(pd.to_datetime, errors='coerce')
 
 # Completeness Frame and Score
 compl_frame, compl_array = dim_completeness(df, completeness_cols)
-compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
+# compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
 
 # Page size for rows to display in DataTable
 PAGE_SIZE = 5
 
-# App Layout
-# app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-
 navbar = dbc.NavbarSimple(
-    brand="Palade - Data Quality Dashboard",
+    brand="Vault - Data Quality Dashboard",
     brand_href="#",
     dark=True
 )
@@ -83,21 +80,23 @@ content = dbc.Container([
     dbc.Row([
 
         # first column of first row
-        dbc.Col(html.Div([html.P(f'{round(int(compl_score), 0)}%',
-                                 style={'textAlign': 'center',
-                                        'font-size': '10vh',
-                                        'height': '100%',
-                                        'paddingTop': '40%',
-                                        'color': '#567C4D'}
-                                 ),
-                          dcc.Dropdown(
-                              options=[{'label': i, 'value': i} for i in completeness_cols],
-                              multi=True,
-                              placeholder='Select a column for individual scores',
-                              style={'width': '100%', 'paddingLeft': '5%'}
-                          )]),
-                width=3
-                ),
+        dbc.Col(html.Div([html.P(
+            id='completeness_score',
+            style={'textAlign': 'center',
+                   'font-size': '10vh',
+                   'height': '100%',
+                   'paddingTop': '40%',
+                   'color': '#567C4D'}
+        ),
+            dcc.Dropdown(
+                id='completeness_column',
+                options=[{'label': i, 'value': i} for i in completeness_cols],
+                multi=True,
+                placeholder='Select a column for individual scores',
+                style={'width': '100%', 'paddingLeft': '5%'}
+            )]),
+            width=3
+        ),
 
         # Barchart visualising the columns
         dbc.Col(
@@ -122,6 +121,7 @@ content = dbc.Container([
                                          'xanchor': "center"},
                                      title={
                                          'text': "Completeness per Column",
+                                         'font': {'size': 18},
                                          'y': 0.92,
                                          'x': 0.5,
                                          'xanchor': 'center',
@@ -136,8 +136,9 @@ content = dbc.Container([
 
     # second row
     dbc.Row([
-        dbc.Col(children=[],
-                width=12)
+        dbc.Col(
+            dcc.Graph(id='completeness_pies'),
+            width=12)
     ], className="h-50")
 ], style={
     "height": "100vh",
@@ -166,3 +167,140 @@ layout = dbc.Container([
     'marginLeft': '0',
     'maxWidth': '100%'
 })
+
+
+@app.callback(Output('completeness_score', 'children'),
+              Input('completeness_column', 'value'))
+def dispaly_score(value):
+    compl_frame, compl_array = dim_completeness(df, completeness_cols)
+
+    if (value is None) | (value == []):
+        compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
+        return f'{round(int(compl_score), 0)}%'
+    else:
+        compl_array = compl_frame[value].values.flatten()
+        compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
+        return f'{round(int(compl_score), 0)}%'
+
+
+@app.callback(Output('completeness_pies', 'figure'),
+              Input('completeness_column', 'value'))
+def display_pies(value):
+    compl_frame = dim_completeness(df, completeness_cols)[0]
+
+    if (value is None) | (value == []):
+        df_new = pd.concat([df['notiftype'], compl_frame], axis=1)
+        df_new.set_index('notiftype', inplace=True)
+
+        values = df['notiftype'].unique()
+
+        counter = []
+        for v in values:
+            c = Counter(df_new.loc[v].values.flatten())
+            counter.append(c)
+
+        color_dict = {'True': '#D62728', 'False': '#2CA02C'}
+        colors = np.array([''] * len(counter[0].values()), dtype=object)
+        for i in np.unique(list(counter[0].keys())):
+            colors[np.where(list(counter[0].keys()) == i)] = color_dict[str(i)]
+
+        data = []
+        for i in range(len(counter)):
+            d = {
+                "values": list(counter[i].values()),
+                "labels": list(counter[i].keys()),
+                "marker": {"colors": colors},
+                "domain": {"column": i},
+                "name": values[i],
+                "hole": .4,
+                "type": "pie"
+            }
+            data.append(d)
+
+        layout = go.Layout(
+            {
+                "title": {"text": "Completeness per Notification Type"},
+                "grid": {"rows": 1, "columns": len(data)},
+                "showlegend": False,
+                "title_x": 0.5,
+                "annotations": [
+                    {
+                        "font": {"size": 18},
+                        "showarrow": False,
+                        "text": "KT",
+                        "font": {"size": 18},
+                        "x": 0.225,
+                        "y": 0.5
+                    },
+                    {
+                        "font": {"size": 18},
+                        "showarrow": False,
+                        "text": "K1",
+                        "font": {"size": 18},
+                        "x": 0.775,
+                        "y": 0.5
+                    }
+                ]
+            }
+        )
+        return go.Figure(data=data,
+                         layout=layout
+                         )
+    else:
+        df_new = pd.concat([df['notiftype'], compl_frame[value]], axis=1)
+        df_new.set_index('notiftype', inplace=True)
+
+        values = df['notiftype'].unique()
+
+        counter = []
+        for v in values:
+            c = Counter(df_new.loc[v].values.flatten())
+            counter.append(c)
+
+        color_dict = {'True': '#D62728', 'False': '#2CA02C'}
+        colors = np.array([''] * len(counter[0].values()), dtype=object)
+        for i in np.unique(list(counter[0].keys())):
+            colors[np.where(list(counter[0].keys()) == i)] = color_dict[str(i)]
+
+        data = []
+        for i in range(len(counter)):
+            d = {
+                "values": list(counter[i].values()),
+                "labels": list(counter[i].keys()),
+                "marker": {"colors": colors},
+                "domain": {"column": i},
+                "name": values[i],
+                "hole": .4,
+                "type": "pie"
+            }
+            data.append(d)
+
+        layout = go.Layout(
+            {
+                "title": {"text": "Completeness per Notification Type"},
+                "grid": {"rows": 1, "columns": len(data)},
+                "showlegend": False,
+                "title_x": 0.5,
+                "annotations": [
+                    {
+                        "font": {"size": 20},
+                        "showarrow": False,
+                        "text": "KT",
+                        "font": {"size": 18},
+                        "x": 0.225,
+                        "y": 0.5
+                    },
+                    {
+                        "font": {"size": 20},
+                        "showarrow": False,
+                        "text": "K1",
+                        "font": {"size": 18},
+                        "x": 0.775,
+                        "y": 0.5
+                    }
+                ]
+            }
+        )
+        return go.Figure(data=data,
+                         layout=layout
+                         )
