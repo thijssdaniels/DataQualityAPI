@@ -3,6 +3,51 @@ import numpy as np
 import operator as op
 import re
 from functools import reduce
+import base64
+import io
+import pathlib
+
+from app import cache
+
+
+def parse_contents(contents, filename):
+    content_type, content_string = contents.split(',')
+
+    # Path
+    BASE_PATH = pathlib.Path(__file__).parent.resolve()
+    DATA_PATH = BASE_PATH.joinpath('data').resolve()
+
+    decoded = base64.b64decode(content_string)
+    try:
+        if 'csv' in filename:
+            # Assume that the user uploaded a CSV file
+            df = pd.read_csv(
+                io.StringIO(decoded.decode('utf-8')), delimiter=';', skiprows=4, na_values='#')
+
+            # Clean column names and parse date columns
+            df.columns = parse_column_names(df)
+
+            date_cols = returnDateCols(df, threshold=0.5, sample_size=1000)
+            df[date_cols] = df[date_cols].apply(pd.to_datetime, errors='coerce')
+
+            df.to_json(path_or_buf=f'{DATA_PATH}/data.json', orient='records')
+        elif 'xls' in filename:
+            # Assume that the user uploaded an excel file
+            df = pd.read_excel(io.BytesIO(decoded))
+
+            return df
+    except Exception as e:
+        print(e)
+
+
+@cache.memoize(timeout=120)
+def query_data():
+    # Path
+    BASE_PATH = pathlib.Path(__file__).parent.resolve()
+    DATA_PATH = BASE_PATH.joinpath('data').resolve()
+
+    df = pd.read_json(f'{DATA_PATH}/data.json')
+    return df
 
 
 def multiStatement(condition, dataframe, reason=np.nan, include_reason=True):
@@ -90,7 +135,6 @@ def singleStatement(condition, dataframe, reason=np.nan, include_reason=True):
 
 
 def parse_column_names(dataframe):
-
     columns = dataframe.columns.tolist()
     repls = (' ', '_'), ('(', ''), (')', ''), ('.', '')
 
@@ -105,7 +149,6 @@ def parse_column_names(dataframe):
 
 
 def returnDateCols(dataframe, threshold=0.75, sample_size=200):
-
     # Create empty lists
     date_cols = []
 
@@ -118,14 +161,14 @@ def returnDateCols(dataframe, threshold=0.75, sample_size=200):
     for column in sample.columns:
 
         sample[column] = sample[column].astype(str)
-        if (sum(sample[column].str.match(regex, na=False)) / len(sample[column].dropna()) > threshold) & (sample[column].dtype == 'object'):
+        if (sum(sample[column].str.match(regex, na=False)) / len(sample[column].dropna()) > threshold) & (
+                sample[column].dtype == 'object'):
             date_cols.append(column)
 
     return date_cols
 
 
 def dim_completeness(dataframe, columns):
-
     # List comprehension to iterate over each column, where FALSE is a non-null value
     df_completeness = pd.concat([pd.isnull(dataframe[col]) for col in columns], axis=1)
 
@@ -274,7 +317,8 @@ def accuracyFun(dataframe, condition, reason=np.nan, include_reason=True):
 
             # Check if value is a digit, a column or a string
             inputs = [input1, input2]
-            output = [int(item) if item.isdigit() else dataframe[item] if item in dataframe.columns else item for item in inputs]
+            output = [int(item) if item.isdigit() else dataframe[item] if item in dataframe.columns else item for item
+                      in inputs]
 
             # Replace True/False to get scores
             result = pd.Series((ops.get(operator)(output[0], output[1])), name=f'assumption_{i + 1}')

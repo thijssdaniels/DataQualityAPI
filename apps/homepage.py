@@ -1,20 +1,16 @@
+import dash
+
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 import dash_table
-import dash
-
-import plotly.graph_objects as go
-import plotly.express as px
 
 import pandas as pd
-import pathlib
-import yaml
-from functions import *
-from styling import *
 
-from app import app
+from functions import *
+from app import app, cache
 
 navbar = dbc.NavbarSimple(
     brand="Vault - Data Quality Dashboard",
@@ -49,13 +45,48 @@ sidebar = dbc.Container([
     ], className='h-100')
 ])
 
+content = dbc.Container([
+    dbc.Row([
 
-content = dbc.Container([], style={
+        # first column of first row
+        dbc.Col(
+            dcc.Upload(
+                id='upload-data',
+                children=html.Div([
+                    'Drag and Drop or ',
+                    html.A('Select Files')
+                ]),
+                style={
+                    'width': '100%',
+                    'height': '100%',
+                    'lineHeight': '100px',
+                    'borderWidth': '1px',
+                    'borderStyle': 'dashed',
+                    'borderRadius': '10px',
+                    'textAlign': 'center',
+                    'margin': '2vh',
+                    'paddingLeft': '2em',
+                    'paddingRight': '2em'
+                },
+                # Allow multiple files to be uploaded
+                multiple=False
+            ),
+            width=3),
+
+        dbc.Col(
+            html.Div(id='datatable'),
+            width=9
+        )
+    ], className="h-50"),
+
+    # second row
+    dbc.Row([])
+], style={
     "height": "100vh",
     "margin": "0vh",
     "border": "0vh",
     "padding": "0vh",
-    "max-width": '100%',
+    "maxWidth": '100%',
 })
 
 layout = dbc.Container([
@@ -68,7 +99,7 @@ layout = dbc.Container([
                 "padding-left": '3vh',
                 "height": "100%",
                 "background-color": "#f8f9fa"
-                }),
+            }),
         dbc.Col(html.Div(content),
                 width=10),
     ], style={
@@ -85,5 +116,32 @@ layout = dbc.Container([
 })
 
 
-#if __name__ == '__main__':
-#   app.run_server(debug=True)
+# Store data as JSON string for future use
+@app.callback(Output('storing-data', 'data'),
+              Input('upload-data', 'contents'),
+              State('upload-data', 'filename'))
+def update_output(list_of_contents, list_of_names):
+    if list_of_contents is not None:
+
+        parse_contents(list_of_contents, list_of_names)
+
+
+# Call DataFrame from memory
+@app.callback(Output('datatable', 'children'),
+              [Input('storing-data', 'data')])
+def update_output(data):
+    if data is None:
+        raise PreventUpdate
+
+    list_of_contents = data['contents']
+    list_of_names = data['filenames']
+
+    df = parse_contents(list_of_contents, list_of_names)
+
+    return html.Div([
+            dash_table.DataTable(
+                data=df.to_dict('rows'),
+                columns=[{"name": i, "id": i} for i in df.columns]
+            )
+        ])
+

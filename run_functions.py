@@ -11,12 +11,19 @@ import plotly.graph_objects as go
 BASE_PATH = pathlib.Path(__file__).parent.resolve()
 DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
+print(DATA_PATH)
+
 with open(DATA_PATH.joinpath('config.yml')) as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format
     yaml_list = yaml.safe_load(file)
     completeness_cols = yaml_list['completeness']
 
+df = pd.read_json(f'{DATA_PATH}/data.json')
+print(df.head())
+
+
+'''
 df = pd.read_csv(DATA_PATH.joinpath('df.csv'), skiprows=4, delimiter=';', na_values='#')
 
 # Parse Date Columns
@@ -43,3 +50,4 @@ color_dict = {'False': '#D62728', 'True': '#2CA0C2'}
 colors = np.array([''] * len(counter[0].values()), dtype=object)
 for i in np.unique(list(counter[0].keys())):
     colors[np.where(list(counter[0].keys()) == i)] = color_dict[str(i)]
+'''

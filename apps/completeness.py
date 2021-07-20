@@ -2,13 +2,11 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
-import dash_table
-import dash
+from dash.exceptions import PreventUpdate
 
 import plotly.graph_objects as go
 import plotly.express as px
 
-import pandas as pd
 import pathlib
 import yaml
 from functions import *
@@ -21,8 +19,8 @@ BASE_PATH = pathlib.Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
 # Read Data
-df = pd.read_csv(DATA_PATH.joinpath('df.csv'), delimiter=';', skiprows=4, na_values='#')
-df['index'] = range(1, len(df) + 1)
+dff = pd.read_csv(DATA_PATH.joinpath('df.csv'), delimiter=';', skiprows=4, na_values='#')
+dff['index'] = range(1, len(dff) + 1)
 
 with open(DATA_PATH.joinpath('config.yml')) as file:
     # The FullLoader parameter handles the conversion from YAML
@@ -31,13 +29,13 @@ with open(DATA_PATH.joinpath('config.yml')) as file:
     completeness_cols = yaml_list['completeness']
 
 # Clean column names and parse date columns
-df.columns = parse_column_names(df)
+dff.columns = parse_column_names(dff)
 
-date_cols = returnDateCols(df, threshold=0.5, sample_size=1000)
-df[date_cols] = df[date_cols].apply(pd.to_datetime, errors='coerce')
+date_colss = returnDateCols(dff, threshold=0.5, sample_size=1000)
+dff[date_colss] = dff[date_colss].apply(pd.to_datetime, errors='coerce')
 
 # Completeness Frame and Score
-compl_frame, compl_array = dim_completeness(df, completeness_cols)
+compll_frame, compll_array = dim_completeness(dff, completeness_cols)
 # compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
 
 # Page size for rows to display in DataTable
@@ -100,14 +98,14 @@ content = dbc.Container([
 
         # Barchart visualising the columns
         dbc.Col(
-            dcc.Graph(figure=go.Figure(data=[go.Bar(x=compl_frame.columns,
-                                                    y=[((len(compl_frame) - compl_frame[col].sum()) / len(compl_frame))
-                                                       for col in compl_frame.columns],
+            dcc.Graph(figure=go.Figure(data=[go.Bar(x=compll_frame.columns,
+                                                    y=[((len(compll_frame) - compll_frame[col].sum()) / len(compll_frame))
+                                                       for col in compll_frame.columns],
                                                     name='True',
                                                     marker_color=px.colors.qualitative.D3[2]),
-                                             go.Bar(x=compl_frame.columns,
-                                                    y=[(compl_frame[col].sum() / len(compl_frame)) for col in
-                                                       compl_frame.columns],
+                                             go.Bar(x=compll_frame.columns,
+                                                    y=[(compll_frame[col].sum() / len(compll_frame)) for col in
+                                                       compll_frame.columns],
                                                     name='False',
                                                     marker_color=px.colors.qualitative.D3[3])]) \
                       .update_layout(barmode='stack',
@@ -170,8 +168,11 @@ layout = dbc.Container([
 
 
 @app.callback(Output('completeness_score', 'children'),
-              Input('completeness_column', 'value'))
-def dispaly_score(value):
+              [Input('completeness_column', 'value')])
+def display_score(value):
+    # Read data from local folder
+    df = query_data()
+
     compl_frame, compl_array = dim_completeness(df, completeness_cols)
 
     if (value is None) | (value == []):
@@ -184,8 +185,11 @@ def dispaly_score(value):
 
 
 @app.callback(Output('completeness_pies', 'figure'),
-              Input('completeness_column', 'value'))
+              [Input('completeness_column', 'value')])
 def display_pies(value):
+    # Read data from local folder
+    df = query_data()
+
     compl_frame = dim_completeness(df, completeness_cols)[0]
 
     if (value is None) | (value == []):
@@ -243,9 +247,7 @@ def display_pies(value):
                 ]
             }
         )
-        return go.Figure(data=data,
-                         layout=layout
-                         )
+        return go.Figure(data=data, layout=layout)
     else:
         df_new = pd.concat([df['notiftype'], compl_frame[value]], axis=1)
         df_new.set_index('notiftype', inplace=True)
@@ -301,6 +303,4 @@ def display_pies(value):
                 ]
             }
         )
-        return go.Figure(data=data,
-                         layout=layout
-                         )
+        return go.Figure(data=data, layout=layout)
