@@ -1,9 +1,11 @@
+import dash
+
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 import dash_table
-import dash
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -108,7 +110,3 @@ layout = dbc.Container([
     'margin-left': '0',
     'max-width': '100%'
 })
-
-
-#if __name__ == '__main__':
-#    app.run_server(debug=True)

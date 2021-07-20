@@ -8,7 +8,8 @@ from apps import accuracy, homepage, overview, completeness, uniqueness, validit
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content')
+    html.Div(id='page-content'),
+    dcc.Store(id='storing-data', storage_type='session')
 ])
 
 
