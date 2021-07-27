@@ -9,4 +9,8 @@ pandas
 pyyaml
 jupyterlab
 Flask-Caching
-
+Flask-SQLAlchemy
+Flask-Login
+SQLAlchemy
+Werkzeug
+configparser2
