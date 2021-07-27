@@ -1,15 +1,14 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 
 import plotly.graph_objects as go
 import plotly.express as px
 
-import pathlib
 import yaml
-from functions import *
+from utils.functions import *
 from collections import Counter
 
 from app import app
@@ -36,10 +35,7 @@ dff[date_colss] = dff[date_colss].apply(pd.to_datetime, errors='coerce')
 
 # Completeness Frame and Score
 compll_frame, compll_array = dim_completeness(dff, completeness_cols)
-# compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
 
-# Page size for rows to display in DataTable
-PAGE_SIZE = 5
 
 navbar = dbc.NavbarSimple(
     brand="Vault - Data Quality Dashboard",
@@ -58,13 +54,12 @@ sidebar = dbc.Container([
                 ),
                 dbc.Nav(
                     [
-                        dbc.NavLink("Home", href="/", active="exact"),
+                        dbc.NavLink("Home", href="/home", active="exact"),
                         dbc.NavLink("Overview", href="/overview", active="exact"),
                         dbc.NavLink("Completeness", href="/completeness", active="exact"),
                         dbc.NavLink("Uniqueness", href="/uniqueness", active="exact"),
                         dbc.NavLink("Validity", href="/validity", active="exact"),
-                        dbc.NavLink("Accuracy", href="/accuracy", active="exact"),
-                        dbc.NavLink("Data", href="/data", active="exact")
+                        dbc.NavLink("Accuracy", href="/accuracy", active="exact")
                     ],
                     vertical=True,
                     pills=True,
@@ -168,8 +163,12 @@ layout = dbc.Container([
 
 
 @app.callback(Output('completeness_score', 'children'),
-              [Input('completeness_column', 'value')])
-def display_score(value):
+              [Input('completeness_column', 'value'),
+               Input('storing-data', 'data')])
+def display_score(value, data):
+    if data is None:
+        raise PreventUpdate
+
     # Read data from local folder
     df = query_data()
 
@@ -185,8 +184,12 @@ def display_score(value):
 
 
 @app.callback(Output('completeness_pies', 'figure'),
-              [Input('completeness_column', 'value')])
-def display_pies(value):
+              [Input('completeness_column', 'value'),
+               Input('storing-data', 'data')])
+def display_pies(value, data):
+    if data is None:
+        raise PreventUpdate
+
     # Read data from local folder
     df = query_data()
 

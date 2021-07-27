@@ -1,13 +1,9 @@
-from functions import *
 import pandas as pd
 import pathlib
-import numpy as np
 import yaml
-from collections import Counter
 
-import plotly.express as px
-import plotly.graph_objects as go
-
+from login.create_login_db import conn
+'''
 BASE_PATH = pathlib.Path(__file__).parent.resolve()
 DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
@@ -21,7 +17,12 @@ with open(DATA_PATH.joinpath('config.yml')) as file:
 
 df = pd.read_json(f'{DATA_PATH}/data.json')
 print(df.head())
+'''
 
+c = conn.cursor()
+df = pd.read_sql('select * from users', conn)
+for i,r in df.iterrows():
+    print(df.loc[i])
 
 '''
 df = pd.read_csv(DATA_PATH.joinpath('df.csv'), skiprows=4, delimiter=';', na_values='#')

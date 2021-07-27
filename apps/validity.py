@@ -1,20 +1,5 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-from dash.dependencies import Input, Output, State
-import dash_table
-import dash
-
-import plotly.graph_objects as go
-import plotly.express as px
-
-import pandas as pd
-import pathlib
-import yaml
-from functions import *
-from styling import *
-
-from app import app
 
 navbar = dbc.NavbarSimple(
     brand="Vault - Data Quality Dashboard",
@@ -33,13 +18,12 @@ sidebar = dbc.Container([
                 ),
                 dbc.Nav(
                     [
-                        dbc.NavLink("Home", href="/", active="exact"),
+                        dbc.NavLink("Home", href="/home", active="exact"),
                         dbc.NavLink("Overview", href="/overview", active="exact"),
                         dbc.NavLink("Completeness", href="/completeness", active="exact"),
                         dbc.NavLink("Uniqueness", href="/uniqueness", active="exact"),
                         dbc.NavLink("Validity", href="/validity", active="exact"),
-                        dbc.NavLink("Accuracy", href="/accuracy", active="exact"),
-                        dbc.NavLink("Data", href="/data", active="exact")
+                        dbc.NavLink("Accuracy", href="/accuracy", active="exact")
                     ],
                     vertical=True,
                     pills=True,
