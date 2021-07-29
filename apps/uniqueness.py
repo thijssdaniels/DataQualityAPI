@@ -1,21 +1,5 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-from dash.dependencies import Input, Output, State
-import dash_table
-import dash
-
-import plotly.graph_objects as go
-import plotly.express as px
-
-import pandas as pd
-import pathlib
-import yaml
-from functions import *
-from styling import *
-
-from app import app
-
 
 navbar = dbc.NavbarSimple(
     brand="Vault - Data Quality Dashboard",

@@ -1,15 +1,14 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 
 import plotly.graph_objects as go
 import plotly.express as px
 
-import pathlib
 import yaml
-from functions import *
+from utils.functions import *
 from collections import Counter
 
 from app import app
@@ -27,7 +26,7 @@ with open(DATA_PATH.joinpath('config.yml')) as file:
     # scalar values to Python the dictionary format
     yaml_list = yaml.safe_load(file)
     completeness_cols = yaml_list['completeness']
-
+'''
 # Clean column names and parse date columns
 dff.columns = parse_column_names(dff)
 
@@ -37,9 +36,7 @@ dff[date_colss] = dff[date_colss].apply(pd.to_datetime, errors='coerce')
 # Completeness Frame and Score
 compll_frame, compll_array = dim_completeness(dff, completeness_cols)
 # compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
-
-# Page size for rows to display in DataTable
-PAGE_SIZE = 5
+'''
 
 navbar = dbc.NavbarSimple(
     brand="Vault - Data Quality Dashboard",
@@ -98,37 +95,7 @@ content = dbc.Container([
 
         # Barchart visualising the columns
         dbc.Col(
-            dcc.Graph(figure=go.Figure(data=[go.Bar(x=compll_frame.columns,
-                                                    y=[((len(compll_frame) - compll_frame[col].sum()) / len(compll_frame))
-                                                       for col in compll_frame.columns],
-                                                    name='True',
-                                                    marker_color=px.colors.qualitative.D3[2]),
-                                             go.Bar(x=compll_frame.columns,
-                                                    y=[(compll_frame[col].sum() / len(compll_frame)) for col in
-                                                       compll_frame.columns],
-                                                    name='False',
-                                                    marker_color=px.colors.qualitative.D3[3])]) \
-                      .update_layout(barmode='stack',
-                                     bargap=0.07,
-                                     yaxis={'tickformat': ".2%"},
-                                     legend={
-                                         'orientation': "h",
-                                         'yanchor': "bottom",
-                                         'y': 1,
-                                         'x': 0.5,
-                                         'xanchor': "center"},
-                                     title={
-                                         'text': "Completeness per Column",
-                                         'font': {'size': 18},
-                                         'y': 0.92,
-                                         'x': 0.5,
-                                         'xanchor': 'center',
-                                         'yanchor': 'top'}),
-                      style={
-                          'height': '95%',
-                          'width': '100%',
-                          'padding': '0',
-                          'verticalAlign': 'middle'}),
+            dcc.Graph(id='completeness_bars'),
             width=9)
     ], className="h-50"),
 
@@ -168,11 +135,13 @@ layout = dbc.Container([
 
 
 @app.callback(Output('completeness_score', 'children'),
-              [Input('completeness_column', 'value')])
-def display_score(value):
-    # Read data from local folder
+              [Input('completeness_column', 'value'),
+               Input('storing-data', 'data')])
+def display_score(value, data):
+    # Read data
     df = query_data()
 
+    global completeness_cols
     compl_frame, compl_array = dim_completeness(df, completeness_cols)
 
     if (value is None) | (value == []):
@@ -185,10 +154,12 @@ def display_score(value):
 
 
 @app.callback(Output('completeness_pies', 'figure'),
-              [Input('completeness_column', 'value')])
-def display_pies(value):
+              [Input('completeness_column', 'value'),
+               Input('storing-data', 'data')])
+def display_pies(value, data):
     # Read data from local folder
     df = query_data()
+    global completeness_cols
 
     compl_frame = dim_completeness(df, completeness_cols)[0]
 
@@ -304,3 +275,42 @@ def display_pies(value):
             }
         )
         return go.Figure(data=data, layout=layout)
+
+
+@app.callback(Output('completeness_bars', 'figure'),
+              [Input('storing-data', 'data')])
+def display_pies(data):
+    # Read completeness columns from local folder
+    # yaml_list = query_rules()
+    global completeness_cols
+
+    # Read data
+    df = query_data()
+    compl_frame, compl_array = dim_completeness(df, completeness_cols)
+
+    return go.Figure(data=[go.Bar(x=compl_frame.columns,
+                                  y=[((len(compl_frame) - compl_frame[col].sum()) / len(compl_frame)) for col in
+                                     compl_frame.columns],
+                                  name='True',
+                                  marker_color=px.colors.qualitative.D3[2]),
+                           go.Bar(x=compl_frame.columns,
+                                  y=[(compl_frame[col].sum() / len(compl_frame)) for col in
+                                     compl_frame.columns],
+                                  name='False',
+                                  marker_color=px.colors.qualitative.D3[3])]) \
+        .update_layout(barmode='stack',
+                       bargap=0.07,
+                       yaxis={'tickformat': ".2%"},
+                       legend={
+                           'orientation': "h",
+                           'yanchor': "bottom",
+                           'y': 1,
+                           'x': 0.5,
+                           'xanchor': "center"},
+                       title={
+                           'text': "Completeness per Column",
+                           'font': {'size': 18},
+                           'y': 0.92,
+                           'x': 0.5,
+                           'xanchor': 'center',
+                           'yanchor': 'top'})
