@@ -31,8 +31,6 @@ def parse_contents(contents, filename):
             df[date_cols] = df[date_cols].apply(pd.to_datetime, errors='coerce')
 
             df.to_json(path_or_buf=f'{DATA_PATH}/data.json', orient='records')
-
-            return filename
         elif 'xls' in filename:
             # Assume that the user uploaded an excel file
             df = pd.read_excel(io.BytesIO(decoded))

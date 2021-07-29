@@ -18,13 +18,12 @@ sidebar = dbc.Container([
                 ),
                 dbc.Nav(
                     [
-                        dbc.NavLink("Home", href="/", active="exact"),
+                        dbc.NavLink("Home", href="/home", active="exact"),
                         dbc.NavLink("Overview", href="/overview", active="exact"),
                         dbc.NavLink("Completeness", href="/completeness", active="exact"),
                         dbc.NavLink("Uniqueness", href="/uniqueness", active="exact"),
                         dbc.NavLink("Validity", href="/validity", active="exact"),
-                        dbc.NavLink("Accuracy", href="/accuracy", active="exact"),
-                        dbc.NavLink("Data", href="/data", active="exact")
+                        dbc.NavLink("Accuracy", href="/accuracy", active="exact")
                     ],
                     vertical=True,
                     pills=True,

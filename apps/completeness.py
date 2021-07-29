@@ -18,25 +18,11 @@ BASE_PATH = pathlib.Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
 # Read Data
-dff = pd.read_csv(DATA_PATH.joinpath('df.csv'), delimiter=';', skiprows=4, na_values='#')
-dff['index'] = range(1, len(dff) + 1)
-
 with open(DATA_PATH.joinpath('config.yml')) as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format
     yaml_list = yaml.safe_load(file)
     completeness_cols = yaml_list['completeness']
-'''
-# Clean column names and parse date columns
-dff.columns = parse_column_names(dff)
-
-date_colss = returnDateCols(dff, threshold=0.5, sample_size=1000)
-dff[date_colss] = dff[date_colss].apply(pd.to_datetime, errors='coerce')
-
-# Completeness Frame and Score
-compll_frame, compll_array = dim_completeness(dff, completeness_cols)
-# compl_score = 100 - (sum(compl_array) / len(compl_array) * 100)
-'''
 
 navbar = dbc.NavbarSimple(
     brand="Vault - Data Quality Dashboard",
@@ -55,13 +41,12 @@ sidebar = dbc.Container([
                 ),
                 dbc.Nav(
                     [
-                        dbc.NavLink("Home", href="/", active="exact"),
+                        dbc.NavLink("Home", href="/home", active="exact"),
                         dbc.NavLink("Overview", href="/overview", active="exact"),
                         dbc.NavLink("Completeness", href="/completeness", active="exact"),
                         dbc.NavLink("Uniqueness", href="/uniqueness", active="exact"),
                         dbc.NavLink("Validity", href="/validity", active="exact"),
-                        dbc.NavLink("Accuracy", href="/accuracy", active="exact"),
-                        dbc.NavLink("Data", href="/data", active="exact")
+                        dbc.NavLink("Accuracy", href="/accuracy", active="exact")
                     ],
                     vertical=True,
                     pills=True,
@@ -138,8 +123,8 @@ layout = dbc.Container([
               [Input('completeness_column', 'value'),
                Input('storing-data', 'data')])
 def display_score(value, data):
-    # Read data
-    df = query_data()
+  # Read data
+  df = query_data()
 
     global completeness_cols
     compl_frame, compl_array = dim_completeness(df, completeness_cols)
@@ -157,6 +142,7 @@ def display_score(value, data):
               [Input('completeness_column', 'value'),
                Input('storing-data', 'data')])
 def display_pies(value, data):
+
     # Read data from local folder
     df = query_data()
     global completeness_cols
