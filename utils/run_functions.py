@@ -2,13 +2,12 @@ import pandas as pd
 import pathlib
 import yaml
 
-from login.create_login_db import conn
-'''
-BASE_PATH = pathlib.Path(__file__).parent.resolve()
+BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
 DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
 print(DATA_PATH)
 
+'''
 with open(DATA_PATH.joinpath('config.yml')) as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format
@@ -16,13 +15,8 @@ with open(DATA_PATH.joinpath('config.yml')) as file:
     completeness_cols = yaml_list['completeness']
 
 df = pd.read_json(f'{DATA_PATH}/data.json')
-print(df.head())
+# print(df.head())
 '''
-
-c = conn.cursor()
-df = pd.read_sql('select * from users', conn)
-for i,r in df.iterrows():
-    print(df.loc[i])
 
 '''
 df = pd.read_csv(DATA_PATH.joinpath('df.csv'), skiprows=4, delimiter=';', na_values='#')

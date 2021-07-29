@@ -14,7 +14,7 @@ def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
 
     # Path
-    BASE_PATH = pathlib.Path(__file__).parent.resolve()
+    BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
     DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
     decoded = base64.b64decode(content_string)
@@ -43,7 +43,7 @@ def parse_contents(contents, filename):
 @cache.memoize(timeout=120)
 def query_data():
     # Path
-    BASE_PATH = pathlib.Path(__file__).parent.resolve()
+    BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
     DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
     df = pd.read_json(f'{DATA_PATH}/data.json')
@@ -193,14 +193,14 @@ def get_pattern(x, show_ws=True, ws_char='<>'):
         if not isinstance(x, str):
             x = str(x)
 
-            x = re.sub('[a-z]', "a", x)
-            x = re.sub('[A-Z]', "A", x)
-            x = re.sub('[0-9]', "9", x)
+            x = re.sub("[a-z]", "a", x)
+            x = re.sub("[A-Z]", "A", x)
+            x = re.sub("[0-9]", "9", x)
 
         if isinstance(x, str):
-            x = re.sub('[a-z]', "a", x)
-            x = re.sub('[A-Z]', "A", x)
-            x = re.sub('[0-9]', "9", x)
+            x = re.sub("[a-z]", "a", x)
+            x = re.sub("[A-Z]", "A", x)
+            x = re.sub("[0-9]", "9", x)
 
         if show_ws == True:
             x = re.sub("\\s", ws_char, x)

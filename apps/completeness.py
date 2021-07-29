@@ -18,24 +18,11 @@ BASE_PATH = pathlib.Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_PATH.joinpath('data').resolve()
 
 # Read Data
-dff = pd.read_csv(DATA_PATH.joinpath('df.csv'), delimiter=';', skiprows=4, na_values='#')
-dff['index'] = range(1, len(dff) + 1)
-
 with open(DATA_PATH.joinpath('config.yml')) as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format
     yaml_list = yaml.safe_load(file)
     completeness_cols = yaml_list['completeness']
-
-# Clean column names and parse date columns
-dff.columns = parse_column_names(dff)
-
-date_colss = returnDateCols(dff, threshold=0.5, sample_size=1000)
-dff[date_colss] = dff[date_colss].apply(pd.to_datetime, errors='coerce')
-
-# Completeness Frame and Score
-compll_frame, compll_array = dim_completeness(dff, completeness_cols)
-
 
 navbar = dbc.NavbarSimple(
     brand="Vault - Data Quality Dashboard",
@@ -93,37 +80,7 @@ content = dbc.Container([
 
         # Barchart visualising the columns
         dbc.Col(
-            dcc.Graph(figure=go.Figure(data=[go.Bar(x=compll_frame.columns,
-                                                    y=[((len(compll_frame) - compll_frame[col].sum()) / len(compll_frame))
-                                                       for col in compll_frame.columns],
-                                                    name='True',
-                                                    marker_color=px.colors.qualitative.D3[2]),
-                                             go.Bar(x=compll_frame.columns,
-                                                    y=[(compll_frame[col].sum() / len(compll_frame)) for col in
-                                                       compll_frame.columns],
-                                                    name='False',
-                                                    marker_color=px.colors.qualitative.D3[3])]) \
-                      .update_layout(barmode='stack',
-                                     bargap=0.07,
-                                     yaxis={'tickformat': ".2%"},
-                                     legend={
-                                         'orientation': "h",
-                                         'yanchor': "bottom",
-                                         'y': 1,
-                                         'x': 0.5,
-                                         'xanchor': "center"},
-                                     title={
-                                         'text': "Completeness per Column",
-                                         'font': {'size': 18},
-                                         'y': 0.92,
-                                         'x': 0.5,
-                                         'xanchor': 'center',
-                                         'yanchor': 'top'}),
-                      style={
-                          'height': '95%',
-                          'width': '100%',
-                          'padding': '0',
-                          'verticalAlign': 'middle'}),
+            dcc.Graph(id='completeness_bars'),
             width=9)
     ], className="h-50"),
 
@@ -166,12 +123,10 @@ layout = dbc.Container([
               [Input('completeness_column', 'value'),
                Input('storing-data', 'data')])
 def display_score(value, data):
-    if data is None:
-        raise PreventUpdate
+  # Read data
+  df = query_data()
 
-    # Read data from local folder
-    df = query_data()
-
+    global completeness_cols
     compl_frame, compl_array = dim_completeness(df, completeness_cols)
 
     if (value is None) | (value == []):
@@ -187,11 +142,10 @@ def display_score(value, data):
               [Input('completeness_column', 'value'),
                Input('storing-data', 'data')])
 def display_pies(value, data):
-    if data is None:
-        raise PreventUpdate
 
     # Read data from local folder
     df = query_data()
+    global completeness_cols
 
     compl_frame = dim_completeness(df, completeness_cols)[0]
 
@@ -307,3 +261,42 @@ def display_pies(value, data):
             }
         )
         return go.Figure(data=data, layout=layout)
+
+
+@app.callback(Output('completeness_bars', 'figure'),
+              [Input('storing-data', 'data')])
+def display_pies(data):
+    # Read completeness columns from local folder
+    # yaml_list = query_rules()
+    global completeness_cols
+
+    # Read data
+    df = query_data()
+    compl_frame, compl_array = dim_completeness(df, completeness_cols)
+
+    return go.Figure(data=[go.Bar(x=compl_frame.columns,
+                                  y=[((len(compl_frame) - compl_frame[col].sum()) / len(compl_frame)) for col in
+                                     compl_frame.columns],
+                                  name='True',
+                                  marker_color=px.colors.qualitative.D3[2]),
+                           go.Bar(x=compl_frame.columns,
+                                  y=[(compl_frame[col].sum() / len(compl_frame)) for col in
+                                     compl_frame.columns],
+                                  name='False',
+                                  marker_color=px.colors.qualitative.D3[3])]) \
+        .update_layout(barmode='stack',
+                       bargap=0.07,
+                       yaxis={'tickformat': ".2%"},
+                       legend={
+                           'orientation': "h",
+                           'yanchor': "bottom",
+                           'y': 1,
+                           'x': 0.5,
+                           'xanchor': "center"},
+                       title={
+                           'text': "Completeness per Column",
+                           'font': {'size': 18},
+                           'y': 0.92,
+                           'x': 0.5,
+                           'xanchor': 'center',
+                           'yanchor': 'top'})
