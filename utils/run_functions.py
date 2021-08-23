@@ -1,11 +1,14 @@
 import pandas as pd
 import pathlib
-import yaml
+import json
 
-BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
-DATA_PATH = BASE_PATH.joinpath('data').resolve()
-
-print(DATA_PATH)
+if pathlib.Path('data1') in pathlib.Path('.').iterdir():
+    BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
+    DATA_PATH = BASE_PATH.joinpath('data1').resolve()
+else:
+    pathlib.Path('data1').mkdir(parents=True, exist_ok=True)
+    BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
+    DATA_PATH = BASE_PATH.joinpath('data1').resolve()
 
 '''
 with open(DATA_PATH.joinpath('config.yml')) as file:

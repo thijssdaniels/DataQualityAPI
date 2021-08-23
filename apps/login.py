@@ -11,6 +11,7 @@ from flask_login import login_user
 
 from login.create_login_db import Users, Users_tbl, engine
 
+from components.header import navbar
 from utils.functions import *
 
 from app import app
@@ -84,12 +85,6 @@ logout = dbc.Container([
               html.Button(id='back-button', children='Go back', n_clicks=0),
               ])  # End div
 ])
-
-navbar = dbc.NavbarSimple(
-    brand="Vault - Data Quality Dashboard",
-    brand_href="#",
-    dark=True
-)
 
 sidebar = dbc.Container([
     dbc.Row([

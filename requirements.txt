@@ -6,6 +6,7 @@ dash-bootstrap-components
 plotly
 dash-table
 pandas
+numpy
 pyyaml
 jupyterlab
 Flask-Caching

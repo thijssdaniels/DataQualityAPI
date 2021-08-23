@@ -6,13 +6,9 @@ from dash.exceptions import PreventUpdate
 import dash_table
 
 from utils.functions import *
-from app import app
+from components.header import navbar
 
-navbar = dbc.NavbarSimple(
-    brand="Vault - Data Quality Dashboard",
-    brand_href="#",
-    dark=True
-)
+from app import app
 
 sidebar = dbc.Container([
     dbc.Row([
@@ -66,6 +62,7 @@ content = dbc.Container([
                 # Allow multiple files to be uploaded
                 multiple=False
             ),
+            html.Div(id='out'),
             width=3),
 
         dbc.Col(
@@ -94,7 +91,7 @@ layout = dbc.Container([
                 "padding-left": '3vh',
                 "height": "100%",
                 "background-color": "#f8f9fa"
-            }),
+                }),
         dbc.Col(html.Div(content),
                 width=10),
     ], style={
@@ -117,7 +114,6 @@ layout = dbc.Container([
               State('upload-data', 'filename'))
 def update_output(list_of_contents, list_of_names):
     if list_of_contents is not None:
-
         parse_contents(list_of_contents, list_of_names)
 
 
@@ -134,9 +130,8 @@ def update_output(data):
     df = parse_contents(list_of_contents, list_of_names)
 
     return html.Div([
-            dash_table.DataTable(
-                data=df.to_dict('rows'),
-                columns=[{"name": i, "id": i} for i in df.columns]
-            )
-        ])
-
+        dash_table.DataTable(
+            data=df.to_dict('rows'),
+            columns=[{"name": i, "id": i} for i in df.columns]
+        )
+    ])

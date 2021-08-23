@@ -1,11 +1,8 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
-navbar = dbc.NavbarSimple(
-    brand="Vault - Data Quality Dashboard",
-    brand_href="#",
-    dark=True
-)
+from components.header import navbar
+from utils.functions import *
 
 sidebar = dbc.Container([
     dbc.Row([

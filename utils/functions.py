@@ -14,8 +14,13 @@ def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
 
     # Path
-    BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
-    DATA_PATH = BASE_PATH.joinpath('data').resolve()
+    if pathlib.Path('data1') in pathlib.Path('.').iterdir():
+        BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
+        DATA_PATH = BASE_PATH.joinpath('data1').resolve()
+    else:
+        pathlib.Path('data1').mkdir(parents=True, exist_ok=True)
+        BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
+        DATA_PATH = BASE_PATH.joinpath('data1').resolve()
 
     decoded = base64.b64decode(content_string)
     try:
@@ -42,11 +47,18 @@ def parse_contents(contents, filename):
 
 @cache.memoize(timeout=120)
 def query_data():
+
     # Path
-    BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
-    DATA_PATH = BASE_PATH.joinpath('data').resolve()
+    if pathlib.Path('data1') in pathlib.Path('.').iterdir():
+        BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
+        DATA_PATH = BASE_PATH.joinpath('data1').resolve()
+    else:
+        pathlib.Path('data1').mkdir(parents=True, exist_ok=True)
+        BASE_PATH = pathlib.Path(__file__).parent.parent.resolve()
+        DATA_PATH = BASE_PATH.joinpath('data1').resolve()
 
     df = pd.read_json(f'{DATA_PATH}/data.json')
+
     return df
 
 
