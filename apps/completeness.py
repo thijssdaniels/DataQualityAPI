@@ -2,14 +2,15 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
-from dash.exceptions import PreventUpdate
 
 import plotly.graph_objects as go
 import plotly.express as px
 
 import yaml
-from utils.functions import *
 from collections import Counter
+
+from utils.functions import *
+from components.header import navbar
 
 from app import app
 
@@ -23,12 +24,6 @@ with open(DATA_PATH.joinpath('config.yml')) as file:
     # scalar values to Python the dictionary format
     yaml_list = yaml.safe_load(file)
     completeness_cols = yaml_list['completeness']
-
-navbar = dbc.NavbarSimple(
-    brand="Vault - Data Quality Dashboard",
-    brand_href="#",
-    dark=True
-)
 
 sidebar = dbc.Container([
     dbc.Row([
@@ -123,8 +118,8 @@ layout = dbc.Container([
               [Input('completeness_column', 'value'),
                Input('storing-data', 'data')])
 def display_score(value, data):
-  # Read data
-  df = query_data()
+    # Read data
+    df = query_data()
 
     global completeness_cols
     compl_frame, compl_array = dim_completeness(df, completeness_cols)

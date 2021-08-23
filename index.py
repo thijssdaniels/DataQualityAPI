@@ -1,4 +1,6 @@
+import dash
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
@@ -12,7 +14,8 @@ from apps import login, overview, completeness, uniqueness, validity, accuracy
 app.layout = html.Div([
     dcc.Location(id='url', refresh=True),
     html.Div(id='page-content', className='content'),
-    dcc.Store(id='storing-data', storage_type='session')
+    dcc.Store(id='storing-data', storage_type='local'),
+    dcc.Store(id='storing-url', storage_type='local')
 ])
 
 server = app.server
@@ -60,7 +63,14 @@ def display_page(pathname):
         if current_user.is_authenticated:
             return accuracy.layout
     else:
-        return '404'
+        # If the user tries to reach a different page, return a 404 message
+        return dbc.Jumbotron(
+            [
+                html.H1("404: Not found", className="text-danger"),
+                html.Hr(),
+                html.P(f"The pathname {pathname} was not recognised..."),
+            ]
+        )
 
 
 if __name__ == '__main__':
